@@ -1,6 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{tsx,html}"],
+  mode: "jit",
   darkMode: "media",
-  prefix: "plasmo-"
+  content: ["./src/**/*.{tsx,html}"],
+  prefix: "plasmo-",
+  theme: {
+    extend: {},
+  },
+  plugins: [],
 }
