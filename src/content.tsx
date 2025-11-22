@@ -47,21 +47,34 @@ const AtlasClipper = () => {
     console.log("Sidequest: Scout script loaded.")
 
     try {
+      // Check if we're on a PDF page
+      if (document.contentType === "application/pdf") {
+        console.warn("Sidequest: PDF detected - content scripts don't work in PDFs by default")
+        return
+      }
+
+      // Check if document has a valid body
+      if (!document.body) {
+        console.warn("Sidequest: No document body found - cannot parse")
+        return
+      }
+
       const documentClone = document.cloneNode(true) as Document
       const reader = new Readability(documentClone)
       const parsed = reader.parse()
 
       console.log("Sidequest: Readability result:", parsed)
 
-      if (parsed && parsed.textContent.length > 200) { // Lowered threshold for testing
+      if (parsed && parsed.textContent.length > 200) {
         console.log("Sidequest: Article detected! Showing button.")
-        // Delay to prevent fighting with page load
         setTimeout(() => setVisible(true), 1000)
       } else {
         console.log("Sidequest: Page content too short or not an article.")
       }
     } catch (err) {
       console.error("Sidequest: Scraper crashed", err)
+      console.error("Sidequest: URL:", window.location.href)
+      console.error("Sidequest: Content type:", document.contentType)
     }
   }, [])
 
