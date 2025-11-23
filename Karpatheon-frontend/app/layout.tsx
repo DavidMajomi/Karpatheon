@@ -44,7 +44,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${cormorantGaramond.variable} ${inter.variable} font-sans antialiased`}>
+      {/* Added suppressHydrationWarning to ignore extension-injected attributes */}
+      <body 
+        className={`${cormorantGaramond.variable} ${inter.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         {children}
         <Analytics />
       </body>
