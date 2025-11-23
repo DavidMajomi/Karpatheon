@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { Search, ZoomIn, ZoomOut, Maximize2, Lock, CheckCircle2, PlayCircle, X } from 'lucide-react'
+import { Search, ZoomIn, ZoomOut, Maximize2, Lock, CheckCircle2, X, MoreHorizontal, Calendar, Clock } from 'lucide-react'
 
 // --- Data Types ---
 type NodeStatus = 'locked' | 'unlocked' | 'completed'
@@ -58,7 +58,7 @@ export function KnowledgeGraphCanvas() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 1 })
   const [isDragging, setIsDragging] = useState(false)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 }) // Track explicit size
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   
   const lastMousePos = useRef({ x: 0, y: 0 })
   const frameRef = useRef<number>(0)
@@ -88,23 +88,20 @@ export function KnowledgeGraphCanvas() {
     }))
   }, [])
 
-  // 1. ROBUST RESIZE HANDLER (ResizeObserver)
+  // Resize Handler
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
-
     const resizeObserver = new ResizeObserver((entries) => {
         for (const entry of entries) {
-            const { width, height } = entry.contentRect
-            setDimensions({ width, height })
+            setDimensions({ width: entry.contentRect.width, height: entry.contentRect.height })
         }
     })
-
     resizeObserver.observe(container)
     return () => resizeObserver.disconnect()
   }, [])
 
-  // 2. MAIN RENDER LOOP
+  // Render Loop
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas || dimensions.width === 0 || dimensions.height === 0) return
@@ -112,34 +109,28 @@ export function KnowledgeGraphCanvas() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // Set Canvas Size exactly to container
     const dpr = window.devicePixelRatio || 1
     canvas.width = dimensions.width * dpr
     canvas.height = dimensions.height * dpr
     ctx.scale(dpr, dpr)
     
-    // Log once to prove we are starting
-    console.log("Starting Canvas Render. Size:", dimensions.width, dimensions.height)
-
     const render = () => {
       timeRef.current += 0.005 
       const { x: camX, y: camY, zoom } = camera
 
-      // Clear Screen (Dark Blue to prove it's drawing)
-      ctx.fillStyle = '#0f172a' // Slate-950 (Dark Blue)
+      // Clear (Dark Blue)
+      ctx.fillStyle = '#09090b' // Zinc-950
       ctx.fillRect(0, 0, dimensions.width, dimensions.height)
 
       const centerX = dimensions.width / 2
       const centerY = dimensions.height / 2
 
       ctx.save()
-      
-      // Camera Transform
       ctx.translate(centerX, centerY)
       ctx.scale(zoom, zoom)
       ctx.translate(-centerX + camX, -centerY + camY)
 
-      // Stars
+      // Background Stars
       backgroundStars.forEach(star => {
         ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`
         ctx.beginPath()
@@ -225,14 +216,14 @@ export function KnowledgeGraphCanvas() {
 
         // Text
         if (zoom > 0.6 || isActive) {
-          ctx.font = `${isActive ? '600' : '500'} 12px Inter, sans-serif`
+          ctx.font = `${isActive ? '600' : '500'} 12px Inter`
           ctx.fillStyle = isActive ? '#fff' : 'rgba(255,255,255,0.6)'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'top'
           ctx.fillText(node.label, node.x, node.y + node.size + 8)
           
           if (zoom > 1.2) {
-            ctx.font = '400 10px Inter, sans-serif'
+            ctx.font = '400 10px Inter'
             ctx.fillStyle = 'rgba(255,255,255,0.4)'
             ctx.fillText(node.category.toUpperCase(), node.x, node.y + node.size + 24)
           }
@@ -248,11 +239,6 @@ export function KnowledgeGraphCanvas() {
   }, [dimensions, camera, hoveredNode, selectedNode, backgroundStars, processedNodes])
 
   // --- Handlers ---
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true)
-    lastMousePos.current = { x: e.clientX, y: e.clientY }
-  }
-
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging) {
       const dx = e.clientX - lastMousePos.current.x
@@ -262,7 +248,6 @@ export function KnowledgeGraphCanvas() {
       return 
     }
 
-    // Hit Test with explicit dimensions
     const mouseX = (e.clientX - containerRef.current!.getBoundingClientRect().left - dimensions.width/2) / camera.zoom - camera.x + dimensions.width/2
     const mouseY = (e.clientY - containerRef.current!.getBoundingClientRect().top - dimensions.height/2) / camera.zoom - camera.y + dimensions.height/2
 
@@ -279,25 +264,23 @@ export function KnowledgeGraphCanvas() {
     if (canvasRef.current) canvasRef.current.style.cursor = found ? 'pointer' : isDragging ? 'grabbing' : 'grab'
   }
 
-  const handleWheel = (e: React.WheelEvent) => {
-    const zoomSensitivity = 0.001
-    const newZoom = Math.max(0.2, Math.min(3, camera.zoom - e.deltaY * zoomSensitivity))
-    setCamera(prev => ({ ...prev, zoom: newZoom }))
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    lastMousePos.current = { x: e.clientX, y: e.clientY }
   }
 
   const handleClick = (e: React.MouseEvent) => {
     if (Math.abs(e.clientX - lastMousePos.current.x) > 5) return 
-    if (hoveredNode) setSelectedNode(hoveredNode === selectedNode ? null : hoveredNode)
-    else setSelectedNode(null)
+    if (hoveredNode) setSelectedNode(hoveredNode) // Keep selected if clicked again
   }
 
   const activeNodeData = processedNodes.find(n => n.id === selectedNode)
 
   return (
-    <div ref={containerRef} className="relative h-full w-full bg-slate-950 overflow-hidden select-none">
+    <div ref={containerRef} className="relative h-full w-full bg-zinc-950 overflow-hidden select-none">
       
       {/* Search Bar */}
-      <div className="absolute left-6 top-6 z-10">
+      <div className={`absolute left-6 top-6 z-10 transition-opacity duration-300 ${activeNodeData ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="group flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 p-2 backdrop-blur-md hover:border-white/20">
           <Search className="h-4 w-4 text-zinc-400 group-hover:text-white" />
           <input placeholder="Search..." className="h-8 w-64 border-none bg-transparent text-sm text-zinc-100 focus:outline-none" />
@@ -305,7 +288,7 @@ export function KnowledgeGraphCanvas() {
       </div>
 
       {/* Controls */}
-      <div className="absolute right-6 top-6 z-10 flex flex-col gap-2">
+      <div className={`absolute right-6 top-6 z-10 flex flex-col gap-2 transition-opacity duration-300 ${activeNodeData ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <button onClick={() => setCamera(c => ({...c, zoom: Math.min(c.zoom + 0.2, 3)}))} className="p-2 rounded-xl border border-white/10 bg-black/40 text-zinc-400 hover:text-white"><ZoomIn className="h-4 w-4" /></button>
         <button onClick={() => setCamera(c => ({...c, zoom: Math.max(c.zoom - 0.2, 0.2)}))} className="p-2 rounded-xl border border-white/10 bg-black/40 text-zinc-400 hover:text-white"><ZoomOut className="h-4 w-4" /></button>
         <button onClick={() => setCamera({ x: 0, y: 0, zoom: 1 })} className="p-2 rounded-xl border border-white/10 bg-black/40 text-zinc-400 hover:text-white"><Maximize2 className="h-4 w-4" /></button>
@@ -318,27 +301,94 @@ export function KnowledgeGraphCanvas() {
         onMouseMove={handleMouseMove}
         onMouseUp={() => setIsDragging(false)}
         onMouseLeave={() => setIsDragging(false)}
-        onWheel={handleWheel}
+        onWheel={(e) => {
+          const newZoom = Math.max(0.2, Math.min(3, camera.zoom - e.deltaY * 0.001))
+          setCamera(prev => ({ ...prev, zoom: newZoom }))
+        }}
         onClick={handleClick}
         className="block"
         style={{ width: dimensions.width, height: dimensions.height }}
       />
 
-      {/* Active Node Info */}
+      {/* --- FULL SCREEN NOTE OVERLAY --- */}
       {activeNodeData && (
-        <div className="absolute right-6 bottom-6 w-80 rounded-xl border border-white/10 bg-black/80 p-5 backdrop-blur-xl">
-          <div className="flex justify-between items-start">
-             <div>
-                <span className="text-xs uppercase text-zinc-400">{activeNodeData.category}</span>
-                <h3 className="text-lg font-bold text-white">{activeNodeData.label}</h3>
-             </div>
-             <button onClick={() => setSelectedNode(null)}><X className="text-white h-5 w-5"/></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          
+          {/* Note Card */}
+          <div className="relative h-[90vh] w-[90vw] max-w-5xl flex flex-col rounded-3xl border border-white/10 bg-zinc-900/95 shadow-2xl animate-in zoom-in-95 duration-300">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-amber-400">
+                   {activeNodeData.status === 'completed' ? <CheckCircle2 /> : <div className="h-4 w-4 rounded-full bg-current shadow-[0_0_10px_currentColor]"/>}
+                </div>
+                <div>
+                   <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
+                      {activeNodeData.category}
+                      <span className="h-1 w-1 rounded-full bg-zinc-700"></span>
+                      <span>Level {activeNodeData.level}</span>
+                   </div>
+                   <h2 className="text-2xl font-bold text-white">{activeNodeData.label}</h2>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                 <button className="rounded-lg p-2 text-zinc-400 hover:bg-white/5 hover:text-white"><MoreHorizontal /></button>
+                 <button 
+                    onClick={() => setSelectedNode(null)} 
+                    className="rounded-lg p-2 text-zinc-400 hover:bg-white/5 hover:text-white"
+                  >
+                    <X className="h-6 w-6" />
+                 </button>
+              </div>
+            </div>
+
+            {/* Editor Area (Placeholder) */}
+            <div className="flex-1 overflow-y-auto p-8">
+               <div className="mx-auto max-w-3xl space-y-8">
+                  {/* Meta Data */}
+                  <div className="flex gap-6 text-sm text-zinc-400">
+                     <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Created Today</div>
+                     <div className="flex items-center gap-2"><Clock className="h-4 w-4" /> 15 min read</div>
+                  </div>
+
+                  {/* Title Input */}
+                  <input 
+                    type="text" 
+                    defaultValue={`Notes on ${activeNodeData.label}`}
+                    className="w-full bg-transparent text-4xl font-bold text-white placeholder:text-zinc-700 focus:outline-none"
+                  />
+                  
+                  {/* Content Placeholder */}
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-lg text-zinc-300 leading-relaxed">
+                       Start typing your thoughts here. This node is currently 
+                       <span className="font-bold text-amber-400"> {activeNodeData.status}</span>. 
+                       Connecting ideas allows you to build a stronger constellation of knowledge.
+                    </p>
+                    <div className="h-4"></div>
+                    <ul className="list-disc pl-5 space-y-2 text-zinc-400">
+                       <li>Key Concept 1: [Waiting for input...]</li>
+                       <li>Key Concept 2: [Waiting for input...]</li>
+                       <li>Key Concept 3: [Waiting for input...]</li>
+                    </ul>
+                  </div>
+               </div>
+            </div>
+
+            {/* Footer / Action Bar */}
+            <div className="border-t border-white/10 p-4 flex justify-between items-center bg-zinc-900/50 rounded-b-3xl">
+               <span className="text-xs text-zinc-500">Last edited just now</span>
+               <button className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-zinc-200">
+                  Save Note
+               </button>
+            </div>
           </div>
-          <button className="mt-4 w-full bg-white text-black py-2 rounded-lg font-bold flex items-center justify-center gap-2">
-             <PlayCircle className="h-4 w-4" /> Open Note
-          </button>
+
         </div>
       )}
+
     </div>
   )
 }
