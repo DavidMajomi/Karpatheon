@@ -1,7 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.api.router import api_router
-from app.api.notes import router as notes_router
 
 load_dotenv()
 
@@ -11,10 +11,21 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Include the V1 router
-app.include_router(api_router, prefix="/api")
+# CORS Configuration - Allow frontend to access API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(notes_router)
+# Include the V1 router (includes notes router via router.py)
+app.include_router(api_router, prefix="/api")
 
 
 @app.get("/")

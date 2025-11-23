@@ -13,7 +13,11 @@ import os
 from datetime import datetime
 from typing import Optional, Dict, Any
 from supabase import create_client, Client
+from dotenv import load_dotenv
 import json
+
+# Load environment variables
+load_dotenv()
 
 
 class NoteService:
@@ -244,6 +248,8 @@ class NoteService:
                 continue
         
         return notes
+
+
 
 
 # Singleton instance

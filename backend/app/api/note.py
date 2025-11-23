@@ -12,8 +12,6 @@ Endpoints:
 
 from fastapi import APIRouter, HTTPException, status
 from typing import List
-
-# Adjust these imports to match your actual project structure
 from app.schemas.note import (
     NoteCreateRequest,
     NoteUpdateRequest,
@@ -22,19 +20,7 @@ from app.schemas.note import (
 )
 from app.services.note import note_service
 
-# For standalone testing, use relative imports:
-import sys
-sys.path.append('/home/claude')
-from note_models import (
-    NoteCreateRequest,
-    NoteUpdateRequest,
-    NoteResponse,
-    NoteContentResponse
-)
-from note_service import note_service
-
-
-router = APIRouter(prefix="/api/notes", tags=["notes"])
+router = APIRouter(prefix="/notes", tags=["notes"])
 
 
 @router.post("", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
