@@ -1,24 +1,32 @@
 import { PersonalityHeader } from '@/components/personality-header'
 import { PersonalityProfile } from '@/components/personality-profile'
 import { PersonalityInsights } from '@/components/personality-insights'
+import { PersonalityNotes } from '@/components/personality-notes'
+import { PersonalityTraitsSidebar } from '@/components/personality-traits-sidebar'
 
 export default function PersonalityPage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="flex h-screen flex-col bg-background/95 overflow-hidden">
       <PersonalityHeader />
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8">
-          <h2 className="font-serif text-3xl font-semibold text-foreground mb-2">Your Learning Personality</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Pantheon analyzes your exploration patterns, questioning style, and knowledge connections to create a personalized learning profile.
-          </p>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <PersonalityProfile />
+
+      <div className="flex-1 overflow-hidden p-4">
+        <div className="mx-auto grid h-full max-w-[1920px] grid-cols-12 gap-4">
+          {/* Left Column - Traits / Sources */}
+          <div className="col-span-3 h-full overflow-hidden">
+            <PersonalityTraitsSidebar />
           </div>
-          <div>
-            <PersonalityInsights />
+
+          {/* Middle Column - Main Content */}
+          <div className="col-span-6 h-full overflow-y-auto rounded-2xl border border-border/50 bg-background shadow-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="p-8 space-y-8">
+              <PersonalityProfile />
+              <PersonalityInsights />
+            </div>
+          </div>
+
+          {/* Right Column - Notes */}
+          <div className="col-span-3 h-full overflow-hidden">
+            <PersonalityNotes className="h-full" />
           </div>
         </div>
       </div>

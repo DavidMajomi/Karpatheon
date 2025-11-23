@@ -6,61 +6,51 @@ import Link from 'next/link'
 
 export function PersonalityHeader() {
   return (
-    <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <Sparkles className="h-4 w-4 text-primary" />
             </div>
-            <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+            <span className="font-serif text-xl font-semibold tracking-tight text-foreground">
               Pantheon
-            </h1>
+            </span>
           </Link>
-          
-          <nav className="flex items-center gap-1">
-            <Link href="/search">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
-                <Home className="h-4 w-4" />
-                Search
-              </Button>
-            </Link>
-            <Link href="/knowledge-graph">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
-                <Network className="h-4 w-4" />
-                Knowledge Graph
-              </Button>
-            </Link>
-            <Link href="/assistant">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
-                <MessageSquare className="h-4 w-4" />
-                Assistant
-              </Button>
-            </Link>
-            <Link href="/notes">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
-                <BookOpen className="h-4 w-4" />
-                Notes
-              </Button>
-            </Link>
-            <Link href="/personality">
-              <Button variant="ghost" size="sm" className="gap-2 text-primary">
-                <Brain className="h-4 w-4" />
-                Personality
-              </Button>
-            </Link>
-          </nav>
+
+          <div className="mx-4 h-6 w-px bg-border/50" />
+
+          <h1 className="text-sm font-medium text-muted-foreground">Personality Profile</h1>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <Link href="/settings">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Settings className="h-5 w-5" />
+
+        <nav className="flex items-center gap-1 rounded-full border border-border/50 bg-background/50 p-1">
+          <Link href="/search">
+            <Button variant="ghost" size="sm" className="rounded-full px-4 text-muted-foreground hover:text-foreground">
+              Search
             </Button>
           </Link>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <User className="h-5 w-5" />
+          <Link href="/knowledge-graph">
+            <Button variant="ghost" size="sm" className="rounded-full px-4 text-muted-foreground hover:text-foreground">
+              Graph
+            </Button>
+          </Link>
+          <Link href="/assistant">
+            <Button variant="ghost" size="sm" className="rounded-full px-4 text-muted-foreground hover:text-foreground">
+              Chat
+            </Button>
+          </Link>
+          <Link href="/personality">
+            <Button variant="secondary" size="sm" className="rounded-full px-4 shadow-sm">
+              Profile
+            </Button>
+          </Link>
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
+            <Settings className="h-5 w-5" />
           </Button>
+          <div className="h-8 w-8 rounded-full bg-primary/10 ring-2 ring-background" />
         </div>
       </div>
     </header>
