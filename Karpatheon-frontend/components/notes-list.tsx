@@ -47,6 +47,10 @@ export function NotesList({ onSelectNote, selectedNoteId }: NotesListProps) {
       }
     }
     fetchNotes()
+
+    // Auto-refresh every 5 seconds to catch new notes from graph
+    const interval = setInterval(fetchNotes, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   return (

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { Search, ZoomIn, ZoomOut, Maximize2, CheckCircle2, X, MoreHorizontal, Calendar, Clock } from 'lucide-react'
+import { Search, ZoomIn, ZoomOut, Maximize2, CheckCircle2, X, MoreHorizontal, Calendar, Clock, Loader2, Check } from 'lucide-react'
+import { notesAPI } from '@/lib/api'
 
 // --- Data Types ---
 type NodeStatus = 'locked' | 'unlocked' | 'completed'
@@ -269,7 +270,18 @@ export function KnowledgeGraphCanvas() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 0.5 }) // Start zoomed out
   const [isDragging, setIsDragging] = useState(false)
+
+  // Note saving state
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+
+  // Reset save states when node changes
+  useEffect(() => {
+    setSaveError(null)
+    setSaveSuccess(false)
+  }, [selectedNode])
   
   const lastMousePos = useRef({ x: 0, y: 0 })
   const frameRef = useRef<number>(0)
@@ -706,7 +718,7 @@ export function KnowledgeGraphCanvas() {
     if (Math.abs(e.clientX - lastMousePos.current.x) > 5) return
     if (hoveredNode) {
       setSelectedNode(hoveredNode)
-      
+
       // Auto-pan to center the selected node
       const node = processedNodes.find(n => n.id === hoveredNode)
       if (node) {
@@ -716,6 +728,42 @@ export function KnowledgeGraphCanvas() {
           y: -node.baseY + dimensions.height / 2,
         }))
       }
+    }
+  }
+
+  const handleSaveAsNote = async () => {
+    if (!activeNodeData) return
+
+    try {
+      setIsSaving(true)
+      setSaveError(null)
+      setSaveSuccess(false)
+
+      await notesAPI.create({
+        file_id: activeNodeData.id,
+        title: activeNodeData.title,
+        content: activeNodeData.description,
+        url: activeNodeData.url
+      })
+
+      setSaveSuccess(true)
+      setTimeout(() => {
+        setSaveSuccess(false)
+        setSelectedNode(null) // Close the panel after success
+      }, 1500)
+
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message.includes('already exists')) {
+          setSaveError('Note already saved!')
+        } else {
+          setSaveError(err.message)
+        }
+      } else {
+        setSaveError('Failed to save note')
+      }
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -856,9 +904,35 @@ export function KnowledgeGraphCanvas() {
 
             {/* Footer */}
             <div className="border-t border-white/10 p-4 flex justify-between items-center bg-zinc-900/50 rounded-b-3xl">
-              <span className="text-xs text-zinc-500">Last edited just now</span>
-              <button className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-zinc-200">
-                Save Note
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-zinc-500">Last edited just now</span>
+                {saveError && (
+                  <span className="text-xs text-red-400">⚠ {saveError}</span>
+                )}
+                {saveSuccess && (
+                  <span className="text-xs text-green-400 flex items-center gap-1">
+                    <Check className="h-3 w-3" /> Saved to Notes!
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={handleSaveAsNote}
+                disabled={isSaving || saveSuccess}
+                className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : saveSuccess ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Saved!
+                  </>
+                ) : (
+                  'Save to Notes'
+                )}
               </button>
             </div>
           </div>
