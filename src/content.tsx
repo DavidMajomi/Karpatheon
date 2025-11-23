@@ -38,13 +38,19 @@ export const getStyle = (): HTMLStyleElement => {
 }
 
 const AtlasClipper = () => {
-  const [visible, setVisible] = useState(false)
+  // DEMO MODE: Set to true to show button on ALL pages for testing
+  const DEMO_MODE = true
 
-  // DEBUG: Force it visible initially to prove the UI works
-  // const [visible, setVisible] = useState(true)
+  const [visible, setVisible] = useState(DEMO_MODE)
 
   useEffect(() => {
     console.log("Sidequest: Scout script loaded.")
+
+    // In demo mode, button is always visible - skip detection
+    if (DEMO_MODE) {
+      console.log("Sidequest: DEMO MODE - button always visible")
+      return
+    }
 
     try {
       // Check if we're on a PDF page
@@ -59,14 +65,40 @@ const AtlasClipper = () => {
         return
       }
 
-      const documentClone = document.cloneNode(true) as Document
-      const reader = new Readability(documentClone)
-      const parsed = reader.parse()
+      // Fallback scraper for basic content extraction
+      const fallbackScrape = () => {
+        const title = document.title
+        const url = window.location.href
+        const bodyText = document.body.innerText || ""
 
-      console.log("Sidequest: Readability result:", parsed)
+        console.log("Sidequest: Fallback scraper used")
+        console.log("Sidequest: Title:", title)
+        console.log("Sidequest: Content length:", bodyText.length)
 
-      if (parsed && parsed.textContent.length > 200) {
-        console.log("Sidequest: Article detected! Showing button.")
+        return {
+          title,
+          textContent: bodyText,
+          length: bodyText.length
+        }
+      }
+
+      let parsed = null
+      let usedFallback = false
+
+      // Try Readability first
+      try {
+        const documentClone = document.cloneNode(true) as Document
+        const reader = new Readability(documentClone)
+        parsed = reader.parse()
+        console.log("Sidequest: Readability result:", parsed)
+      } catch (readabilityErr) {
+        console.warn("Sidequest: Readability failed, using fallback scraper", readabilityErr)
+        parsed = fallbackScrape()
+        usedFallback = true
+      }
+
+      if (parsed && parsed.textContent && parsed.textContent.length > 200) {
+        console.log(`Sidequest: Article detected! (${usedFallback ? 'fallback' : 'readability'})`)
         setTimeout(() => setVisible(true), 1000)
       } else {
         console.log("Sidequest: Page content too short or not an article.")
@@ -76,13 +108,60 @@ const AtlasClipper = () => {
       console.error("Sidequest: URL:", window.location.href)
       console.error("Sidequest: Content type:", document.contentType)
     }
-  }, [])
+  }, [DEMO_MODE])
 
   const handleAddToAtlas = async () => {
-    console.log("Sidequest: Button clicked")
+    console.log("Sidequest: Button clicked - extracting content...")
+
+    // Extract content for the payload
+    let payload = {
+      url: window.location.href,
+      title: document.title,
+      timestamp: new Date().toISOString(),
+      content: null as any,
+      method: "unknown"
+    }
+
+    try {
+      // Try Readability first
+      const documentClone = document.cloneNode(true) as Document
+      const reader = new Readability(documentClone)
+      const parsed = reader.parse()
+
+      if (parsed) {
+        payload.content = {
+          title: parsed.title,
+          byline: parsed.byline,
+          excerpt: parsed.excerpt,
+          textContent: parsed.textContent?.substring(0, 500) + "...", // First 500 chars
+          contentLength: parsed.textContent?.length || 0,
+          siteName: parsed.siteName,
+          publishedTime: parsed.publishedTime
+        }
+        payload.method = "readability"
+      }
+    } catch (err) {
+      console.warn("Sidequest: Readability failed, using fallback", err)
+
+      // Fallback to basic scraping
+      payload.content = {
+        title: document.title,
+        textContent: document.body.innerText?.substring(0, 500) + "...",
+        contentLength: document.body.innerText?.length || 0
+      }
+      payload.method = "fallback"
+    }
+
+    console.log("🎯 PAYLOAD:", JSON.stringify(payload, null, 2))
+    console.table({
+      URL: payload.url,
+      Title: payload.title,
+      Method: payload.method,
+      "Content Length": payload.content?.contentLength || 0
+    })
+
+    alert(`Added to Atlas!\n\nMethod: ${payload.method}\nContent: ${payload.content?.contentLength || 0} chars\n\nCheck console for full payload`)
     setVisible(false)
-    // Add your sendMessage logic here
-    alert("Added to Atlas!")
   }
 
   if (!visible) return null
