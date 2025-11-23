@@ -10,6 +10,7 @@ dependencies = [
     "langchain-community>=0.4.1",
     "langchain-google-genai>=2.0.0",
     "langchain-text-splitters>=1.0.0",
+    "exa-py>=1.0.0",
     "neo4j>=6.0.3",
     "pydantic-settings>=2.12.0",
     "pytest>=9.0.1",
