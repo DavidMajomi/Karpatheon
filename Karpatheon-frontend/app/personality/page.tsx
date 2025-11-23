@@ -2,7 +2,7 @@ import { PersonalityHeader } from '@/components/personality-header'
 import { PersonalityProfile } from '@/components/personality-profile'
 import { PersonalityInsights } from '@/components/personality-insights'
 import { PersonalityNotes } from '@/components/personality-notes'
-import { PersonalityTraitsSidebar } from '@/components/personality-traits-sidebar'
+import { TimeSpentSidebar } from '@/components/time-spent-sidebar'
 
 export default function PersonalityPage() {
   return (
@@ -13,7 +13,7 @@ export default function PersonalityPage() {
         <div className="mx-auto grid h-full max-w-[1920px] grid-cols-12 gap-4">
           {/* Left Column - Traits / Sources */}
           <div className="col-span-3 h-full overflow-hidden">
-            <PersonalityTraitsSidebar />
+            <TimeSpentSidebar />
           </div>
 
           {/* Middle Column - Main Content */}
