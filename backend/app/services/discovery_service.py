@@ -4,7 +4,6 @@ import hashlib
 from typing import List, Dict, Any
 from datetime import datetime
 from exa_py import Exa
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from app.db.clients import get_neo4j
 from app.schemas.discovery import InterestPayload, IngestResponse, DiscoveryResponse, DiscoveryItem
 import numpy as np
@@ -15,10 +14,23 @@ class DiscoveryService:
     
     def __init__(self):
         self.exa = Exa(api_key=os.getenv("EXA_API_KEY"))
-        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.neo4j = get_neo4j()
         self.storage_path = "data/discoveries"
         self.crawled_urls_path = "data/crawled_urls.json"
+        
+        # Configure embedding provider
+        self.embedding_provider = os.getenv("EMBEDDING_PROVIDER", "local").lower()
+        
+        if self.embedding_provider == "google":
+            from langchain_google_genai import GoogleGenerativeAIEmbeddings
+            self.embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+            self.embedding_dimension = 768
+            print("✅ Using Google Gemini embeddings")
+        else:  # local/BGE
+            from sentence_transformers import SentenceTransformer
+            self.embeddings = SentenceTransformer('BAAI/bge-base-en-v1.5')
+            self.embedding_dimension = 768
+            print("✅ Using local BGE embeddings (BAAI/bge-base-en-v1.5)")
         
         # Ensure storage directories exist
         os.makedirs(self.storage_path, exist_ok=True)
@@ -30,9 +42,34 @@ class DiscoveryService:
                 json.dump({"urls": {}}, f)
     
     async def compute_embedding(self, text: str) -> List[float]:
-        """Compute embedding for text using Google's embedding model."""
-        embedding = await self.embeddings.aembed_query(text)
-        return embedding
+        """Compute embedding for text using configured embedding provider.
+        
+        Supports both Google Gemini (async) and local BGE (sync) embeddings.
+        Falls back to deterministic mock embeddings if quota is exceeded.
+        """
+        try:
+            if self.embedding_provider == "google":
+                # Google embeddings are async
+                embedding = await self.embeddings.aembed_query(text)
+                return embedding
+            else:
+                # Local embeddings are sync, convert to list
+                embedding = self.embeddings.encode(text, convert_to_numpy=False)
+                return embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
+        except Exception as e:
+            error_msg = str(e).lower()
+            # Only use fallback for quota/rate limit errors
+            if 'quota' in error_msg or 'rate limit' in error_msg or '429' in error_msg:
+                print(f"⚠️  API quota exceeded, using mock embeddings for: {text[:50]}...")
+                # Generate deterministic mock embedding based on text hash
+                import random
+                text_hash = int(hashlib.md5(text.encode()).hexdigest(), 16)
+                random.seed(text_hash)
+                # Generate 768-dimensional mock embedding
+                return [random.random() for _ in range(768)]
+            else:
+                # Re-raise other exceptions for proper error handling
+                raise
     
     def cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
         """Compute cosine similarity between two vectors."""

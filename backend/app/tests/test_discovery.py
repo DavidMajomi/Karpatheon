@@ -225,7 +225,7 @@ class TestDiscoveryServiceIntegration:
     """Integration tests for DiscoveryService methods."""
     
     @patch('app.services.discovery_service.Exa')
-    @patch('app.services.discovery_service.GoogleGenerativeAIEmbeddings')
+    @patch('sentence_transformers.SentenceTransformer')
     @patch('app.services.discovery_service.get_neo4j')
     def test_url_deduplication(self, mock_neo4j, mock_embeddings, mock_exa):
         """Test that URLs are properly deduplicated."""
@@ -258,7 +258,7 @@ class TestDiscoveryServiceIntegration:
         assert "https://another-new.com" in filtered
     
     @patch('app.services.discovery_service.Exa')
-    @patch('app.services.discovery_service.GoogleGenerativeAIEmbeddings')
+    @patch('sentence_transformers.SentenceTransformer')
     @patch('app.services.discovery_service.get_neo4j')
     def test_cosine_similarity_calculation(self, mock_neo4j, mock_embeddings, mock_exa):
         """Test cosine similarity computation."""
@@ -280,7 +280,7 @@ class TestDiscoveryServiceIntegration:
     
     @pytest.mark.asyncio
     @patch('app.services.discovery_service.Exa')
-    @patch('app.services.discovery_service.GoogleGenerativeAIEmbeddings')
+    @patch('sentence_transformers.SentenceTransformer')
     @patch('app.services.discovery_service.get_neo4j')
     async def test_kb_similarity_fallback(self, mock_neo4j, mock_embeddings, mock_exa):
         """Test that KB similarity has fallback when Neo4j fails."""

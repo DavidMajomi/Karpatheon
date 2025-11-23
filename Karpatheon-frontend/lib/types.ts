@@ -57,3 +57,47 @@ export interface APIError {
   status?: number
   details?: any
 }
+
+// Discovery Types
+export interface ContentData {
+  title: string
+  byline?: string
+  excerpt?: string
+  textContent: string
+  contentLength: number
+  siteName?: string
+  publishedTime?: string
+}
+
+export interface InterestPayload {
+  url: string
+  title: string
+  timestamp: string
+  content: ContentData
+  method: string
+}
+
+export interface IngestResponse {
+  status: string
+  interest_url: string
+  crawled_count: number
+  stored_path: string
+  top_similarity_score: number
+}
+
+export interface DiscoveryItem {
+  url: string
+  title: string
+  snippet: string
+  similarity_to_kb: number
+  similarity_to_interest: number
+  source_interest_url: string
+  crawled_at: string
+}
+
+export interface DiscoveryResponse {
+  discoveries: DiscoveryItem[]
+  total_available: number
+  filtered_count: number
+  min_similarity_used: number
+}

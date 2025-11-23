@@ -7,6 +7,9 @@ import type {
     GraphContext,
     FileResponse,
     APIError,
+    InterestPayload,
+    IngestResponse,
+    DiscoveryResponse,
 } from './types'
 
 class APIClient {
@@ -74,6 +77,27 @@ class APIClient {
                 'Content-Type': 'multipart/form-data',
             },
         })
+        return response.data
+    }
+
+    // Discovery endpoints
+    async ingestInterest(userId: string, payload: InterestPayload): Promise<IngestResponse> {
+        const response = await this.client.post<IngestResponse>(
+            `/api/discovery/ingest?user_id=${userId}`,
+            payload
+        )
+        return response.data
+    }
+
+    async listDiscoveries(
+        userId: string,
+        minSimilarity: number = 0.7,
+        limit: number = 20
+    ): Promise<DiscoveryResponse> {
+        const response = await this.client.get<DiscoveryResponse>(
+            `/api/discovery/list`,
+            { params: { user_id: userId, min_similarity: minSimilarity, limit } }
+        )
         return response.data
     }
 }
