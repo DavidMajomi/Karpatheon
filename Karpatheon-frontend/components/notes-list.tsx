@@ -1,57 +1,57 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Tag, Clock, Star } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { notesAPI, type Note } from '@/lib/api'
 
-type Note = {
-  id: string
-  title: string
-  preview: string
-  tags: string[]
-  timestamp: string
-  starred: boolean
+function formatTimestamp(isoString: string): string {
+  const date = new Date(isoString)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const days = Math.floor(hours / 24)
+
+  if (hours < 1) return 'Just now'
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`
+  if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`
+  if (days < 30) return `${Math.floor(days / 7)} week${days >= 14 ? 's' : ''} ago`
+  return date.toLocaleDateString()
 }
 
-const notes: Note[] = [
-  {
-    id: '1',
-    title: 'Neural Network Architectures',
-    preview: 'Deep dive into transformer models and their applications in modern AI systems...',
-    tags: ['AI', 'Deep Learning'],
-    timestamp: '2 hours ago',
-    starred: true,
-  },
-  {
-    id: '2',
-    title: 'Product Strategy Framework',
-    preview: 'Key insights from scaling tech products to enterprise customers...',
-    tags: ['Business', 'Strategy'],
-    timestamp: 'Yesterday',
-    starred: false,
-  },
-  {
-    id: '3',
-    title: 'Leadership Principles',
-    preview: 'Notes from conversation with Sarah Chen about building high-performing teams...',
-    tags: ['Leadership', 'Management'],
-    timestamp: '3 days ago',
-    starred: true,
-  },
-  {
-    id: '4',
-    title: 'Quantum Computing Basics',
-    preview: 'Understanding qubits, superposition, and quantum entanglement...',
-    tags: ['Quantum', 'Physics'],
-    timestamp: '1 week ago',
-    starred: false,
-  },
-]
+type NotesListProps = {
+  onSelectNote: (noteId: string) => void
+  selectedNoteId: string | null
+}
 
-export function NotesList() {
-  const [selectedNote, setSelectedNote] = useState('1')
+export function NotesList({ onSelectNote, selectedNoteId }: NotesListProps) {
+  const [notes, setNotes] = useState<Note[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchNotes() {
+      try {
+        setLoading(true)
+        const data = await notesAPI.list()
+        setNotes(data)
+        if (data.length > 0 && !selectedNoteId) {
+          onSelectNote(data[0].file_id)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load notes')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchNotes()
+
+    // Auto-refresh every 5 seconds to catch new notes from graph
+    const interval = setInterval(fetchNotes, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <aside className="w-80 border-r border-border/50 bg-background/50 overflow-y-auto">
@@ -81,13 +81,31 @@ export function NotesList() {
 
       {/* Notes List */}
       <div className="p-2">
-        {notes.map((note) => (
+        {loading && (
+          <div className="p-4 text-center text-muted-foreground">
+            Loading notes...
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 text-center text-destructive text-sm">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && notes.length === 0 && (
+          <div className="p-4 text-center text-muted-foreground text-sm">
+            No notes yet. Create your first note!
+          </div>
+        )}
+
+        {!loading && !error && notes.map((note) => (
           <button
-            key={note.id}
-            onClick={() => setSelectedNote(note.id)}
+            key={note.file_id}
+            onClick={() => onSelectNote(note.file_id)}
             className={cn(
               'w-full rounded-lg p-4 text-left transition-colors',
-              selectedNote === note.id
+              selectedNoteId === note.file_id
                 ? 'bg-primary/10 border border-primary/20'
                 : 'hover:bg-muted/30 border border-transparent'
             )}
@@ -96,26 +114,22 @@ export function NotesList() {
               <h3 className="font-serif font-semibold text-foreground leading-tight line-clamp-1">
                 {note.title}
               </h3>
-              {note.starred && <Star className="h-4 w-4 shrink-0 fill-primary text-primary" />}
             </div>
             <p className="mb-3 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-              {note.preview}
+              {note.url || 'No URL'}
             </p>
             <div className="flex items-center justify-between">
               <div className="flex flex-wrap gap-1">
-                {note.tags.slice(0, 2).map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="text-xs bg-accent/10 text-accent border-accent/20"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
+                <Badge
+                  variant="secondary"
+                  className="text-xs bg-accent/10 text-accent border-accent/20"
+                >
+                  {(note.size_bytes / 1024).toFixed(1)}KB
+                </Badge>
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {note.timestamp}
+                {formatTimestamp(note.updated_at)}
               </div>
             </div>
           </button>

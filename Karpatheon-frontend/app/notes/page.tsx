@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { AppHeader } from '@/components/app-header'
 import { NotesList } from '@/components/notes-list'
 import { NotesEditor } from '@/components/notes-editor'
@@ -7,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
 export default function NotesPage() {
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
+
   return (
     <main className="flex h-screen flex-col bg-background">
       <AppHeader
@@ -18,8 +21,8 @@ export default function NotesPage() {
         }
       />
       <div className="flex flex-1 overflow-hidden">
-        <NotesList />
-        <NotesEditor />
+        <NotesList onSelectNote={setSelectedNoteId} selectedNoteId={selectedNoteId} />
+        <NotesEditor selectedNoteId={selectedNoteId} />
       </div>
     </main>
   )
