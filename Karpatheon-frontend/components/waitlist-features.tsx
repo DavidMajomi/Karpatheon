@@ -4,12 +4,12 @@ const features = [
   {
     icon: Brain,
     title: 'Learns Your Interests',
-    description: 'Pantheon builds a knowledge graph of your curiosity, connecting ideas and surfacing patterns you\'d never find manually.'
+    description: 'Karpatheon builds a knowledge graph of your curiosity, connecting ideas and surfacing patterns you\'d never find manually.'
   },
   {
     icon: TrendingUp,
     title: 'Evolves With You',
-    description: 'As your interests grow and shift, Pantheon adapts. Your search engine becomes more intelligent over time, not stale.'
+    description: 'As your interests grow and shift, Karpatheon adapts. Your search engine becomes more intelligent over time, not stale.'
   },
   {
     icon: Shield,
@@ -19,7 +19,7 @@ const features = [
   {
     icon: Zap,
     title: 'Instant Insights',
-    description: 'Get answers in milliseconds, not minutes. Pantheon pre-computes connections so you never wait for brilliance.'
+    description: 'Get answers in milliseconds, not minutes. Karpatheon pre-computes connections so you never wait for brilliance.'
   }
 ]
 
@@ -28,20 +28,20 @@ export function WaitlistFeatures() {
     <section className="py-32 px-4 relative">
       {/* Subtle divider line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-transparent via-border to-transparent" />
-      
+
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
           <h2 className="text-4xl md:text-6xl font-light mb-6 text-balance">
             Built for the <span className="text-primary">relentlessly curious</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Stop searching the same things twice. Pantheon remembers, connects, and reveals.
+            Stop searching the same things twice. Karpatheon remembers, connects, and reveals.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <div 
+            <div
               key={feature.title}
               className="group p-8 bg-card/30 backdrop-blur border border-border/50 rounded-lg hover:border-primary/30 transition-all hover:bg-card/50 animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}

@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Updated to Pantheon luxury theme with gold, charcoal, ivory, and teal colors */
+/* Updated to Karpatheon luxury theme with gold, charcoal, ivory, and teal colors */
 :root {
   --background: 19 19 19; /* #131313 Charcoal Black */
   --foreground: 255 255 245; /* #FFFFF5 Ivory */

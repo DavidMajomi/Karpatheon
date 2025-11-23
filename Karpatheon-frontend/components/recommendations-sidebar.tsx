@@ -35,8 +35,12 @@ export function RecommendationsSidebar() {
           return crawledDate > dayAgo
         }).length
       })
-    } catch (error) {
-      console.error('Failed to load stats:', error)
+    } catch (error: any) {
+      console.error('Failed to load stats:', {
+        message: error.message,
+        status: error.status,
+        details: error.details
+      })
     }
   }
 

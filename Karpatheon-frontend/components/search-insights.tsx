@@ -35,7 +35,7 @@ export function SearchInsights() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-8 text-center">
           <h2 className="font-serif text-2xl font-semibold text-foreground">
-            Your Pantheon Intelligence
+            Your Karpatheon Intelligence
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Growing and learning with every search

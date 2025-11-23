@@ -13,14 +13,14 @@ export function RecommendationsSettings() {
   const [explorationBalance, setExplorationBalance] = useState([60])
   const [depthPreference, setDepthPreference] = useState([75])
   const [diversityScore, setDiversityScore] = useState([45])
-  
+
   const [interests, setInterests] = useState([
     'Artificial Intelligence',
     'Machine Learning',
     'Product Strategy',
     'Leadership',
   ])
-  
+
   const [excludedTopics, setExcludedTopics] = useState([
     'Cryptocurrency',
     'Gaming',
@@ -42,7 +42,7 @@ export function RecommendationsSettings() {
             Recommendations & Exploration
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Customize how Pantheon learns your preferences and suggests new knowledge paths.
+            Customize how Karpatheon learns your preferences and suggests new knowledge paths.
           </p>
         </div>
 
@@ -278,7 +278,7 @@ export function RecommendationsSettings() {
             </div>
 
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              These weights determine how we curate your personalized recommendations. 
+              These weights determine how we curate your personalized recommendations.
               Your preferences automatically adjust these over time based on what you engage with.
             </p>
           </Card>

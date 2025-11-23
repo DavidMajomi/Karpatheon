@@ -24,7 +24,7 @@ export function AppHeader({ actions }: AppHeaderProps) {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <h1 className="font-serif text-2xl font-semibold tracking-tight text-foreground">
-              Pantheon
+              Karpatheon
             </h1>
           </Link>
 

@@ -87,7 +87,7 @@ export function SearchInterface() {
         {!searchResults && (
           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-accent" />
-            <span>Pantheon learns from every search to serve you better</span>
+            <span>Karpatheon learns from every search to serve you better</span>
           </div>
         )}
       </div>

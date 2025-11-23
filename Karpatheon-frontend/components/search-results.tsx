@@ -20,7 +20,7 @@ export function SearchResults({ results }: SearchResultsProps) {
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
               <h3 className="font-serif text-lg font-semibold text-foreground">
-                Pantheon Insight
+                Karpatheon Insight
               </h3>
               <span className="rounded-full bg-accent/20 px-2 py-0.5 text-xs text-accent">
                 Powered by Exa

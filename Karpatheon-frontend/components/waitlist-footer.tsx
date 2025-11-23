@@ -8,7 +8,7 @@ export function WaitlistFooter() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="text-lg font-light tracking-wider text-primary">PANTHEON</span>
+            <span className="text-lg font-light tracking-wider text-primary">Karpatheon</span>
           </div>
 
           {/* Links */}
@@ -26,7 +26,7 @@ export function WaitlistFooter() {
 
           {/* Copyright */}
           <p className="text-sm text-muted-foreground font-light" style={{ fontFamily: 'Inter, sans-serif' }}>
-            © 2025 Pantheon. Built for the curious.
+            © 2025 Karpatheon. Built for the curious.
           </p>
         </div>
       </div>
