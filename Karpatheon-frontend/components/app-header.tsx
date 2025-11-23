@@ -3,11 +3,21 @@
 import { Sparkles, User, Network, MessageSquare, BookOpen, Brain, Home, Settings, Compass } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { ReactNode } from 'react'
 
-export function SearchHeader() {
+interface AppHeaderProps {
+  actions?: ReactNode
+}
+
+export function AppHeader({ actions }: AppHeaderProps) {
+  const pathname = usePathname()
+
+  const isActive = (path: string) => pathname === path
+
   return (
     <header className="border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 max-w-full items-center justify-between px-6">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20">
@@ -17,50 +27,79 @@ export function SearchHeader() {
               Pantheon
             </h1>
           </Link>
-          
+
           <nav className="flex items-center gap-1">
             <Link href="/search">
-              <Button variant="ghost" size="sm" className="gap-2 text-primary">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-2 ${isActive('/search') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <Home className="h-4 w-4" />
                 Search
               </Button>
             </Link>
             <Link href="/recommendations">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-2 ${isActive('/recommendations') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <Compass className="h-4 w-4" />
                 Discover
               </Button>
             </Link>
             <Link href="/knowledge-graph">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-2 ${isActive('/knowledge-graph') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <Network className="h-4 w-4" />
                 Knowledge Graph
               </Button>
             </Link>
             <Link href="/assistant">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-2 ${isActive('/assistant') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <MessageSquare className="h-4 w-4" />
                 Assistant
               </Button>
             </Link>
             <Link href="/notes">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-2 ${isActive('/notes') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <BookOpen className="h-4 w-4" />
                 Notes
               </Button>
             </Link>
             <Link href="/personality">
-              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`gap-2 ${isActive('/personality') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+              >
                 <Brain className="h-4 w-4" />
                 Personality
               </Button>
             </Link>
           </nav>
         </div>
-        
+
         <div className="flex items-center gap-2">
+          {actions}
           <Link href="/settings">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={isActive('/settings') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}
+            >
               <Settings className="h-5 w-5" />
             </Button>
           </Link>

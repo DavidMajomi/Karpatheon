@@ -1,13 +1,13 @@
 'use client'
 
-import { RecommendationsHeader } from '@/components/recommendations-header'
+import { AppHeader } from '@/components/app-header'
 import { RecommendationsGrid } from '@/components/recommendations-grid'
 import { RecommendationsSidebar } from '@/components/recommendations-sidebar'
 
 export default function RecommendationsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <RecommendationsHeader />
+      <AppHeader />
       
       <main className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex gap-8">

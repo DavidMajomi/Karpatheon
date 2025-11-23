@@ -1,4 +1,4 @@
-import { KnowledgeGraphHeader } from '@/components/knowledge-graph-header'
+import { AppHeader } from '@/components/app-header'
 import { KnowledgeGraphCanvas } from '@/components/knowledge-graph-canvas'
 // import { KnowledgeGraphSidebar } from '@/components/knowledge-graph-sidebar'
 
@@ -6,9 +6,9 @@ export default function KnowledgeGraphPage() {
   return (
     // 1. h-screen forces full viewport height
     <main className="flex h-screen flex-col bg-zinc-950 overflow-hidden">
-      
+
       {/* Header stays at the top */}
-      <KnowledgeGraphHeader />
+      <AppHeader />
       
       {/* Main Content Area */}
       <div className="relative flex flex-1 w-full overflow-hidden">

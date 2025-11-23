@@ -1,4 +1,4 @@
-import { PersonalityHeader } from '@/components/personality-header'
+import { AppHeader } from '@/components/app-header'
 import { PersonalityProfile } from '@/components/personality-profile'
 import { PersonalityInsights } from '@/components/personality-insights'
 import { PersonalityNotes } from '@/components/personality-notes'
@@ -7,7 +7,7 @@ import { TimeSpentSidebar } from '@/components/time-spent-sidebar'
 export default function PersonalityPage() {
   return (
     <main className="flex h-screen flex-col bg-background/95 overflow-hidden">
-      <PersonalityHeader />
+      <AppHeader />
 
       <div className="flex-1 overflow-hidden p-4">
         <div className="mx-auto grid h-full max-w-[1920px] grid-cols-12 gap-4">
