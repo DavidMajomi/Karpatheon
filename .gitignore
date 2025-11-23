@@ -2,3 +2,8 @@ node_modules/
 .next/
 __pycache__/
 .env
+*.db
+*.id
+data/
+logs/
+*.jar
