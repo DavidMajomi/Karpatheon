@@ -271,7 +271,7 @@ export function KnowledgeGraphCanvas() {
 
   const handleClick = (e: React.MouseEvent) => {
     if (Math.abs(e.clientX - lastMousePos.current.x) > 5) return 
-    if (hoveredNode) setSelectedNode(hoveredNode) // Keep selected if clicked again
+    if (hoveredNode) setSelectedNode(hoveredNode) 
   }
 
   const activeNodeData = processedNodes.find(n => n.id === selectedNode)
@@ -314,7 +314,6 @@ export function KnowledgeGraphCanvas() {
       {activeNodeData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           
-          {/* Note Card */}
           <div className="relative h-[90vh] w-[90vw] max-w-5xl flex flex-col rounded-3xl border border-white/10 bg-zinc-900/95 shadow-2xl animate-in zoom-in-95 duration-300">
             
             {/* Header */}
@@ -344,9 +343,9 @@ export function KnowledgeGraphCanvas() {
               </div>
             </div>
 
-            {/* Editor Area (Placeholder) */}
+            {/* Editor Area */}
             <div className="flex-1 overflow-y-auto p-8">
-               <div className="mx-auto max-w-3xl space-y-8">
+               <div className="mx-auto max-w-3xl space-y-8 h-full flex flex-col">
                   {/* Meta Data */}
                   <div className="flex gap-6 text-sm text-zinc-400">
                      <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Created Today</div>
@@ -360,24 +359,16 @@ export function KnowledgeGraphCanvas() {
                     className="w-full bg-transparent text-4xl font-bold text-white placeholder:text-zinc-700 focus:outline-none"
                   />
                   
-                  {/* Content Placeholder */}
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-lg text-zinc-300 leading-relaxed">
-                       Start typing your thoughts here. This node is currently 
-                       <span className="font-bold text-amber-400"> {activeNodeData.status}</span>. 
-                       Connecting ideas allows you to build a stronger constellation of knowledge.
-                    </p>
-                    <div className="h-4"></div>
-                    <ul className="list-disc pl-5 space-y-2 text-zinc-400">
-                       <li>Key Concept 1: [Waiting for input...]</li>
-                       <li>Key Concept 2: [Waiting for input...]</li>
-                       <li>Key Concept 3: [Waiting for input...]</li>
-                    </ul>
-                  </div>
+                  {/* WRITABLE BODY (FIXED) */}
+                  <textarea 
+                    className="flex-1 w-full resize-none bg-transparent text-lg leading-relaxed text-zinc-300 placeholder:text-zinc-700 focus:outline-none"
+                    placeholder="Start typing your thoughts here..."
+                    defaultValue="Start typing your thoughts here..."
+                  />
                </div>
             </div>
 
-            {/* Footer / Action Bar */}
+            {/* Footer */}
             <div className="border-t border-white/10 p-4 flex justify-between items-center bg-zinc-900/50 rounded-b-3xl">
                <span className="text-xs text-zinc-500">Last edited just now</span>
                <button className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-black hover:bg-zinc-200">
