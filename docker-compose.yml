@@ -17,10 +17,10 @@ services:
       - ./neo4j/plugins:/plugins
       - ./neo4j/logs:/logs
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:7474" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   # --- Queue & Caching ---
   redis:
@@ -31,37 +31,48 @@ services:
     volumes:
       - ./redis/data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # # --- Backend API ---
-  # backend:
-  #   build:
-  #     context: ../backend  # <--- Looks up one level
-  #     dockerfile: Dockerfile
-  #   container_name: mvp_backend
-  #   volumes:
-  #     - ../backend:/app    # <--- Hot reloading mount
-  #   ports:
-  #     - "8000:8000"
-  #   env_file:
-  #     - ../.env            # <--- Uses root .env
-  #   depends_on:
-  #     neo4j:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   # Command for development (Hot Reload)
-  #   command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  # --- Backend API ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mvp_backend
+    volumes:
+      - ./backend:/app
+      # Exclude .venv to prevent conflicts with local development
+      - /app/.venv
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   # --- Frontend ---
-  # (Uncomment when frontend is ready)
-  # frontend:
-  #   build:
-  #     context: ../frontend
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ../frontend/src:/app/src
+  frontend:
+    build:
+      context: ./Karpatheon-frontend
+      dockerfile: Dockerfile
+    container_name: mvp_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Karpatheon-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    command: npm run dev

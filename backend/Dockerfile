@@ -4,4 +4,6 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
 COPY . .
+# Ensure data directory exists and is writable
+RUN mkdir -p data/discoveries && chmod -R 777 data
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
