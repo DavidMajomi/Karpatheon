@@ -10,10 +10,10 @@ uv init
 # 3. Install strictly necessary dependencies
 # Core: FastAPI, Uvicorn
 # DBs: Supabase, Neo4j
-# AI/Data: Langchain (OpenAI), Python-Multipart (Uploads)
+# AI/Data: Langchain (Gemini), Python-Multipart (Uploads)
 uv add fastapi uvicorn python-dotenv python-multipart \
        supabase neo4j \
-       langchain-openai langchain-community
+       langchain-google-genai langchain-community
 
 # 4. Generate minimal boilerplate files
 
@@ -48,7 +48,7 @@ SUPABASE_KEY=
 NEO4J_URI=bolt://neo4j:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=
-OPENAI_API_KEY=
+GOOGLE_API_KEY=
 EOF
 
 echo "✅ Backend scaffolded. Run 'cd backend && uv run uvicorn app.main:app --reload' to start."
