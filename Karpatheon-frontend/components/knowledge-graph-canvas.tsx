@@ -131,27 +131,56 @@ const DEMO_GRAPH_DATA = {
   ]
 }
 
+// --- Category Configuration ---
+const CATEGORY_CONFIG = {
+  'Math': {
+    offsetX: 0,
+    color: '#E8B86D', // Warmer, richer gold (like Skyrim's fire/gold)
+    glowColor: 'rgba(232, 184, 109, 0.4)',
+    bgGradient: ['rgba(232, 184, 109, 0.08)', 'rgba(139, 92, 46, 0)']
+  },
+  'AI': {
+    offsetX: 1200,
+    color: '#5EC8F2', // Brighter cyan-blue (like Skyrim's frost/ice)
+    glowColor: 'rgba(94, 200, 242, 0.4)',
+    bgGradient: ['rgba(94, 200, 242, 0.08)', 'rgba(30, 58, 138, 0)']
+  },
+  'Music': {
+    offsetX: 2400,
+    color: '#B58EF7', // Lighter purple (like Skyrim's magic/arcane)
+    glowColor: 'rgba(181, 142, 247, 0.4)',
+    bgGradient: ['rgba(181, 142, 247, 0.08)', 'rgba(88, 28, 135, 0)']
+  }
+}
+
 // --- Layout Algorithm ---
 const LEVEL_SPACING = 250
 const ROW_SPACING = 150
 
-function calculateLevels(nodes: GraphNode[], edges: GraphEdge[]): Map<string, number> {
+function calculateLevels(nodes: GraphNode[], edges: GraphEdge[], category: string): Map<string, number> {
+  const categoryNodes = nodes.filter(n => n.category === category)
   const levels = new Map<string, number>()
   const inDegree = new Map<string, number>()
   const adjList = new Map<string, string[]>()
 
-  nodes.forEach(node => {
+  categoryNodes.forEach(node => {
     inDegree.set(node.id, 0)
     adjList.set(node.id, [])
   })
 
   edges.forEach(edge => {
-    adjList.get(edge.from)?.push(edge.to)
-    inDegree.set(edge.to, (inDegree.get(edge.to) || 0) + 1)
+    const fromNode = nodes.find(n => n.id === edge.from)
+    const toNode = nodes.find(n => n.id === edge.to)
+    
+    // Only process edges within the same category for level calculation
+    if (fromNode?.category === category && toNode?.category === category) {
+      adjList.get(edge.from)?.push(edge.to)
+      inDegree.set(edge.to, (inDegree.get(edge.to) || 0) + 1)
+    }
   })
 
   const queue: string[] = []
-  nodes.forEach(node => {
+  categoryNodes.forEach(node => {
     if (inDegree.get(node.id) === 0) {
       levels.set(node.id, 0)
       queue.push(node.id)
@@ -176,7 +205,7 @@ function calculateLevels(nodes: GraphNode[], edges: GraphEdge[]): Map<string, nu
     })
   }
 
-  nodes.forEach(node => {
+  categoryNodes.forEach(node => {
     if (!levels.has(node.id)) {
       levels.set(node.id, 0)
     }
@@ -185,75 +214,60 @@ function calculateLevels(nodes: GraphNode[], edges: GraphEdge[]): Map<string, nu
   return levels
 }
 
-function calculateRows(nodes: GraphNode[], levels: Map<string, number>): Map<string, number> {
-  const rows = new Map<string, number>()
-  const categories = new Map<string, GraphNode[]>()
-  
-  nodes.forEach(node => {
-    if (!categories.has(node.category)) categories.set(node.category, [])
-    categories.get(node.category)!.push(node)
-  })
+function layoutGraph(nodes: GraphNode[], edges: GraphEdge[]): PositionedNode[] {
+  const categories = [...new Set(nodes.map(n => n.category))]
+  const positionedNodes: PositionedNode[] = []
 
-  const categoryOffsets: Record<string, number> = {
-    'Math': 0,
-    'AI': -2,
-    'Music': 2,
-  }
-
-  categories.forEach((categoryNodes, category) => {
-    const baseOffset = categoryOffsets[category] || 0
-    const levelGroups = new Map<number, GraphNode[]>()
+  categories.forEach(category => {
+    const categoryNodes = nodes.filter(n => n.category === category)
+    const levels = calculateLevels(nodes, edges, category)
     
+    // Group by level
+    const levelGroups = new Map<number, GraphNode[]>()
     categoryNodes.forEach(node => {
       const level = levels.get(node.id) || 0
       if (!levelGroups.has(level)) levelGroups.set(level, [])
       levelGroups.get(level)!.push(node)
     })
 
-    levelGroups.forEach((nodesAtLevel) => {
+    // Position nodes
+    categoryNodes.forEach(node => {
+      const level = levels.get(node.id) || 0
+      const nodesAtLevel = levelGroups.get(level) || []
+      const indexInLevel = nodesAtLevel.indexOf(node)
       const count = nodesAtLevel.length
-      nodesAtLevel.forEach((node, idx) => {
-        const offset = (idx - (count - 1) / 2) * 0.5
-        rows.set(node.id, baseOffset + offset)
+      
+      const categoryOffset = CATEGORY_CONFIG[category as keyof typeof CATEGORY_CONFIG].offsetX
+      const row = (indexInLevel - (count - 1) / 2) * 0.8
+
+      positionedNodes.push({
+        ...node,
+        level,
+        row,
+        baseX: categoryOffset + (level * LEVEL_SPACING),
+        baseY: row * ROW_SPACING,
+        noiseX: Math.random() * 40 - 20,
+        noiseY: Math.random() * 40 - 20,
+        phase: Math.random() * Math.PI * 2,
+        size: node.status === 'completed' ? 40 : 30,
+        x: 0,
+        y: 0,
       })
     })
   })
 
-  return rows
-}
-
-function layoutGraph(nodes: GraphNode[], edges: GraphEdge[]): PositionedNode[] {
-  const levels = calculateLevels(nodes, edges)
-  const rows = calculateRows(nodes, levels)
-
-  return nodes.map(node => {
-    const level = levels.get(node.id) || 0
-    const row = rows.get(node.id) || 0
-
-    return {
-      ...node,
-      level,
-      row,
-      baseX: level * LEVEL_SPACING,
-      baseY: row * ROW_SPACING,
-      noiseX: Math.random() * 40 - 20,
-      noiseY: Math.random() * 40 - 20,
-      phase: Math.random() * Math.PI * 2,
-      size: node.status === 'completed' ? 40 : 30,
-      x: 0,
-      y: 0,
-    }
-  })
+  return positionedNodes
 }
 
 // --- Main Component ---
 export function KnowledgeGraphCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const minimapRef = useRef<HTMLCanvasElement>(null)
   
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
-  const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 1 })
+  const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 0.5 }) // Start zoomed out
   const [isDragging, setIsDragging] = useState(false)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   
@@ -266,13 +280,29 @@ export function KnowledgeGraphCanvas() {
     return layoutGraph(DEMO_GRAPH_DATA.nodes, DEMO_GRAPH_DATA.edges)
   }, [])
 
-  // Background stars
+  // Calculate bounds for minimap
+  const graphBounds = useMemo(() => {
+    if (processedNodes.length === 0) return { minX: 0, maxX: 0, minY: 0, maxY: 0, width: 0, height: 0 }
+    
+    const xs = processedNodes.map(n => n.baseX)
+    const ys = processedNodes.map(n => n.baseY)
+    const minX = Math.min(...xs) - 200
+    const maxX = Math.max(...xs) + 200
+    const minY = Math.min(...ys) - 200
+    const maxY = Math.max(...ys) + 200
+    
+    return { minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY }
+  }, [processedNodes])
+
+  // Background stars with twinkle effect
   const backgroundStars = useMemo(() => {
-    return Array.from({ length: 150 }).map(() => ({
-      x: Math.random() * 4000 - 2000,
+    return Array.from({ length: 300 }).map(() => ({
+      x: Math.random() * 6000 - 1000,
       y: Math.random() * 4000 - 2000,
-      size: Math.random() * 1.5,
-      opacity: Math.random() * 0.5 + 0.1
+      size: Math.random() * 2 + 0.5,
+      baseOpacity: Math.random() * 0.6 + 0.4,
+      twinkleSpeed: Math.random() * 0.5 + 0.5,
+      twinkleOffset: Math.random() * Math.PI * 2
     }))
   }, [])
 
@@ -289,7 +319,81 @@ export function KnowledgeGraphCanvas() {
     return () => resizeObserver.disconnect()
   }, [])
 
-  // Render loop
+  // Render minimap
+  useEffect(() => {
+    const minimap = minimapRef.current
+    if (!minimap || processedNodes.length === 0) return
+
+    const ctx = minimap.getContext('2d')
+    if (!ctx) return
+
+    const width = 200
+    const height = 120
+    minimap.width = width
+    minimap.height = height
+
+    // Clear
+    ctx.fillStyle = '#18181b'
+    ctx.fillRect(0, 0, width, height)
+
+    // Draw category regions
+    const scaleX = width / graphBounds.width
+    const scaleY = height / graphBounds.height
+
+    Object.entries(CATEGORY_CONFIG).forEach(([category, config]) => {
+      const categoryNodes = processedNodes.filter(n => n.category === category)
+      if (categoryNodes.length === 0) return
+
+      const xs = categoryNodes.map(n => n.baseX)
+      const ys = categoryNodes.map(n => n.baseY)
+      const minX = Math.min(...xs) - 100
+      const maxX = Math.max(...xs) + 100
+      const minY = Math.min(...ys) - 100
+      const maxY = Math.max(...ys) + 100
+
+      const x = (minX - graphBounds.minX) * scaleX
+      const y = (minY - graphBounds.minY) * scaleY
+      const w = (maxX - minX) * scaleX
+      const h = (maxY - minY) * scaleY
+
+      ctx.fillStyle = config.bgGradient[0]
+      ctx.fillRect(x, y, w, h)
+      
+      ctx.strokeStyle = config.color
+      ctx.lineWidth = 1
+      ctx.strokeRect(x, y, w, h)
+    })
+
+    // Draw nodes as tiny dots
+    processedNodes.forEach(node => {
+      const x = (node.baseX - graphBounds.minX) * scaleX
+      const y = (node.baseY - graphBounds.minY) * scaleY
+      
+      const config = CATEGORY_CONFIG[node.category as keyof typeof CATEGORY_CONFIG]
+      ctx.fillStyle = config.color
+      ctx.beginPath()
+      ctx.arc(x, y, 2, 0, Math.PI * 2)
+      ctx.fill()
+    })
+
+    // Draw viewport rectangle
+    const viewWidth = dimensions.width / camera.zoom
+    const viewHeight = dimensions.height / camera.zoom
+    const viewCenterX = dimensions.width / 2 - camera.x
+    const viewCenterY = dimensions.height / 2 - camera.y
+    
+    const vx = ((viewCenterX - viewWidth/2) - graphBounds.minX) * scaleX
+    const vy = ((viewCenterY - viewHeight/2) - graphBounds.minY) * scaleY
+    const vw = viewWidth * scaleX
+    const vh = viewHeight * scaleY
+
+    ctx.strokeStyle = '#fff'
+    ctx.lineWidth = 2
+    ctx.strokeRect(vx, vy, vw, vh)
+
+  }, [processedNodes, graphBounds, camera, dimensions])
+
+  // Render main canvas
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas || dimensions.width === 0 || dimensions.height === 0) return
@@ -317,12 +421,87 @@ export function KnowledgeGraphCanvas() {
       ctx.scale(zoom, zoom)
       ctx.translate(-centerX + camX, -centerY + camY)
 
-      // Background stars
+      // Background stars with glow
       backgroundStars.forEach(star => {
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`
+        const twinkle = Math.sin(timeRef.current * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7
+        const opacity = star.baseOpacity * twinkle
+        
+        // Star glow
+        const glowGradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size * 3)
+        glowGradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`)
+        glowGradient.addColorStop(0.3, `rgba(200, 220, 255, ${opacity * 0.6})`)
+        glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+        ctx.fillStyle = glowGradient
+        ctx.beginPath()
+        ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2)
+        ctx.fill()
+        
+        // Star core
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
         ctx.beginPath()
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2)
         ctx.fill()
+      })
+
+      // Draw category background nebula regions
+      Object.entries(CATEGORY_CONFIG).forEach(([category, config]) => {
+        const categoryNodes = processedNodes.filter(n => n.category === category)
+        if (categoryNodes.length === 0) return
+
+        const xs = categoryNodes.map(n => n.baseX)
+        const ys = categoryNodes.map(n => n.baseY)
+        const minX = Math.min(...xs) - 150
+        const maxX = Math.max(...xs) + 150
+        const minY = Math.min(...ys) - 150
+        const maxY = Math.max(...ys) + 150
+        const centerCatX = (minX + maxX) / 2
+        const centerCatY = (minY + maxY) / 2
+
+        // Multi-layer nebula effect
+        const gradient1 = ctx.createRadialGradient(centerCatX - 100, centerCatY - 100, 0, centerCatX, centerCatY, 500)
+        gradient1.addColorStop(0, config.bgGradient[0].replace('0.05', '0.08'))
+        gradient1.addColorStop(0.5, config.bgGradient[0].replace('0.05', '0.03'))
+        gradient1.addColorStop(1, config.bgGradient[1])
+        
+        const gradient2 = ctx.createRadialGradient(centerCatX + 150, centerCatY + 150, 0, centerCatX, centerCatY, 600)
+        gradient2.addColorStop(0, config.bgGradient[0].replace('0.05', '0.06'))
+        gradient2.addColorStop(0.6, config.bgGradient[0].replace('0.05', '0.02'))
+        gradient2.addColorStop(1, config.bgGradient[1])
+        
+        // Apply nebula layers with blend modes
+        ctx.globalCompositeOperation = 'screen'
+        ctx.fillStyle = gradient1
+        ctx.fillRect(minX, minY, maxX - minX, maxY - minY)
+        ctx.fillStyle = gradient2
+        ctx.fillRect(minX, minY, maxX - minX, maxY - minY)
+        ctx.globalCompositeOperation = 'source-over'
+        
+        // Add some "dust" particles
+        for (let i = 0; i < 30; i++) {
+          const dustX = minX + Math.random() * (maxX - minX)
+          const dustY = minY + Math.random() * (maxY - minY)
+          const dustSize = Math.random() * 40 + 20
+          const dustOpacity = Math.random() * 0.03 + 0.01
+          
+          const dustGrad = ctx.createRadialGradient(dustX, dustY, 0, dustX, dustY, dustSize)
+          dustGrad.addColorStop(0, config.color + Math.floor(dustOpacity * 255).toString(16).padStart(2, '0'))
+          dustGrad.addColorStop(1, 'rgba(0,0,0,0)')
+          
+          ctx.fillStyle = dustGrad
+          ctx.beginPath()
+          ctx.arc(dustX, dustY, dustSize, 0, Math.PI * 2)
+          ctx.fill()
+        }
+
+        // Category label - fixed size, always visible at top
+        const labelSize = 48
+        ctx.font = `900 ${labelSize}px Inter`
+        ctx.fillStyle = config.color
+        ctx.globalAlpha = zoom < 0.8 ? 0.4 : 0.2 // Subtle at all zoom levels
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'top'
+        ctx.fillText(category.toUpperCase(), centerCatX, minY - 80)
+        ctx.globalAlpha = 1
       })
 
       // Edges
@@ -338,15 +517,24 @@ export function KnowledgeGraphCanvas() {
           const ty = toNode.baseY + toNode.noiseY + Math.cos(timeRef.current + toNode.phase) * 5
 
           const isLocked = fromNode.status === 'locked' || toNode.status === 'locked'
+          const isCrossCategory = fromNode.category !== toNode.category
+          
           const grad = ctx.createLinearGradient(fx, fy, tx, ty)
           
           if (isLocked) {
             grad.addColorStop(0, 'rgba(255, 255, 255, 0.05)')
             grad.addColorStop(1, 'rgba(255, 255, 255, 0.05)')
             ctx.setLineDash([5, 5])
+          } else if (isCrossCategory) {
+            // Interdisciplinary connection - rainbow gradient
+            grad.addColorStop(0, CATEGORY_CONFIG[fromNode.category as keyof typeof CATEGORY_CONFIG].color)
+            grad.addColorStop(1, CATEGORY_CONFIG[toNode.category as keyof typeof CATEGORY_CONFIG].color)
+            ctx.setLineDash([])
+            ctx.lineWidth = 3
           } else {
-            grad.addColorStop(0, 'rgba(211, 168, 78, 0.4)')
-            grad.addColorStop(1, 'rgba(100, 200, 255, 0.4)')
+            const categoryColor = CATEGORY_CONFIG[fromNode.category as keyof typeof CATEGORY_CONFIG].color
+            grad.addColorStop(0, categoryColor + '66')
+            grad.addColorStop(1, categoryColor + '66')
             ctx.setLineDash([])
           }
 
@@ -355,6 +543,7 @@ export function KnowledgeGraphCanvas() {
           ctx.moveTo(fx, fy)
           ctx.lineTo(tx, ty)
           ctx.stroke()
+          ctx.lineWidth = 2
         }
       })
 
@@ -367,21 +556,22 @@ export function KnowledgeGraphCanvas() {
         const isHovered = hoveredNode === node.id
         const isActive = isSelected || isHovered
 
+        const config = CATEGORY_CONFIG[node.category as keyof typeof CATEGORY_CONFIG]
         let coreColor = '#52525b'
         let glowColor = 'rgba(255,255,255,0.05)'
         let glowSize = node.size * 2
 
         if (node.status === 'completed') {
-          coreColor = '#FCD34D'
-          glowColor = 'rgba(251, 191, 36, 0.2)'
+          coreColor = config.color
+          glowColor = config.glowColor
         } else if (node.status === 'unlocked') {
-          coreColor = '#38bdf8'
-          glowColor = 'rgba(56, 189, 248, 0.2)'
+          coreColor = config.color
+          glowColor = config.glowColor.replace('0.3', '0.2')
         }
 
         if (isActive) {
           glowSize = node.size * 3
-          glowColor = node.status === 'locked' ? 'rgba(255,255,255,0.1)' : glowColor.replace('0.2', '0.4')
+          glowColor = node.status === 'locked' ? 'rgba(255,255,255,0.1)' : glowColor.replace(/[\d.]+\)/, '0.5)')
         }
 
         // Glow
@@ -408,12 +598,6 @@ export function KnowledgeGraphCanvas() {
           ctx.textAlign = 'center'
           ctx.textBaseline = 'top'
           ctx.fillText(node.title, node.x, node.y + node.size + 8)
-          
-          if (zoom > 1.2) {
-            ctx.font = '400 10px Inter'
-            ctx.fillStyle = 'rgba(255,255,255,0.4)'
-            ctx.fillText(node.category.toUpperCase(), node.x, node.y + node.size + 24)
-          }
         }
       })
 
@@ -461,7 +645,19 @@ export function KnowledgeGraphCanvas() {
 
   const handleClick = (e: React.MouseEvent) => {
     if (Math.abs(e.clientX - lastMousePos.current.x) > 5) return
-    if (hoveredNode) setSelectedNode(hoveredNode)
+    if (hoveredNode) {
+      setSelectedNode(hoveredNode)
+      
+      // Auto-pan to center the selected node
+      const node = processedNodes.find(n => n.id === hoveredNode)
+      if (node) {
+        setCamera(prev => ({
+          ...prev,
+          x: -node.baseX + dimensions.width / 2,
+          y: -node.baseY + dimensions.height / 2,
+        }))
+      }
+    }
   }
 
   const activeNodeData = processedNodes.find(n => n.id === selectedNode)
@@ -473,7 +669,7 @@ export function KnowledgeGraphCanvas() {
       <div className={`absolute left-6 top-6 z-10 transition-opacity duration-300 ${activeNodeData ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="group flex items-center gap-2 rounded-xl border border-white/10 bg-black/40 p-2 backdrop-blur-md hover:border-white/20">
           <Search className="h-4 w-4 text-zinc-400 group-hover:text-white" />
-          <input placeholder="Search nodes..." className="h-8 w-64 border-none bg-transparent text-sm text-zinc-100 focus:outline-none" />
+          <input placeholder="Search constellation..." className="h-8 w-64 border-none bg-transparent text-sm text-zinc-100 focus:outline-none" />
         </div>
       </div>
 
@@ -485,9 +681,14 @@ export function KnowledgeGraphCanvas() {
         <button onClick={() => setCamera(c => ({...c, zoom: Math.max(c.zoom - 0.2, 0.2)}))} className="p-2 rounded-xl border border-white/10 bg-black/40 text-zinc-400 hover:text-white">
           <ZoomOut className="h-4 w-4" />
         </button>
-        <button onClick={() => setCamera({ x: 0, y: 0, zoom: 1 })} className="p-2 rounded-xl border border-white/10 bg-black/40 text-zinc-400 hover:text-white">
+        <button onClick={() => setCamera({ x: 0, y: 0, zoom: 0.5 })} className="p-2 rounded-xl border border-white/10 bg-black/40 text-zinc-400 hover:text-white">
           <Maximize2 className="h-4 w-4" />
         </button>
+      </div>
+
+      {/* Minimap */}
+      <div className={`absolute right-6 bottom-6 z-10 rounded-xl border border-white/20 bg-black/60 p-2 backdrop-blur-md transition-opacity duration-300 ${activeNodeData ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <canvas ref={minimapRef} className="rounded-lg" />
       </div>
 
       {/* Canvas */}
@@ -514,7 +715,10 @@ export function KnowledgeGraphCanvas() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 p-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 text-amber-400">
+                <div 
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800"
+                  style={{ color: CATEGORY_CONFIG[activeNodeData.category as keyof typeof CATEGORY_CONFIG].color }}
+                >
                   {activeNodeData.status === 'completed' ? (
                     <CheckCircle2 />
                   ) : (
@@ -523,7 +727,9 @@ export function KnowledgeGraphCanvas() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
-                    {activeNodeData.category}
+                    <span style={{ color: CATEGORY_CONFIG[activeNodeData.category as keyof typeof CATEGORY_CONFIG].color }}>
+                      {activeNodeData.category}
+                    </span>
                     <span className="h-1 w-1 rounded-full bg-zinc-700"></span>
                     <span>Level {activeNodeData.level}</span>
                   </div>
@@ -564,7 +770,8 @@ export function KnowledgeGraphCanvas() {
                   href={activeNodeData.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm text-sky-400 hover:text-sky-300 underline"
+                  className="text-sm hover:underline"
+                  style={{ color: CATEGORY_CONFIG[activeNodeData.category as keyof typeof CATEGORY_CONFIG].color }}
                 >
                   View Source →
                 </a>
