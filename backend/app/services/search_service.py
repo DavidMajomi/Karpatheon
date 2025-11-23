@@ -11,7 +11,7 @@ class SearchService:
     def __init__(self):
         self.exa = Exa(api_key=os.getenv("EXA_API_KEY"))
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-2.5-flash",
             temperature=0
         )
     
@@ -40,7 +40,6 @@ class SearchService:
         search_response = self.exa.search(
             refined_query,
             num_results=num_results,
-            use_autoprompt=True,
             type="neural"
         )
         
