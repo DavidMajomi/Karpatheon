@@ -1,6 +1,6 @@
 import { KnowledgeGraphHeader } from '@/components/knowledge-graph-header'
 import { KnowledgeGraphCanvas } from '@/components/knowledge-graph-canvas'
-import { KnowledgeGraphSidebar } from '@/components/knowledge-graph-sidebar'
+// import { KnowledgeGraphSidebar } from '@/components/knowledge-graph-sidebar'
 
 export default function KnowledgeGraphPage() {
   return (
@@ -23,7 +23,7 @@ export default function KnowledgeGraphPage() {
         <div className="pointer-events-none absolute inset-0 z-10 flex justify-end p-6">
            {/* Enable pointer events only on the actual sidebar content */}
            <div className="pointer-events-auto h-full">
-             <KnowledgeGraphSidebar />
+             {/* <KnowledgeGraphSidebar /> */}
            </div>
         </div>
 

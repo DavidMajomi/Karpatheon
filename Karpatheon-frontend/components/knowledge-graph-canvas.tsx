@@ -443,7 +443,7 @@ export function KnowledgeGraphCanvas() {
         ctx.fill()
       })
 
-      // Draw category background nebula regions
+      // Draw category background nebula regions with spiral galaxy effect
       Object.entries(CATEGORY_CONFIG).forEach(([category, config]) => {
         const categoryNodes = processedNodes.filter(n => n.category === category)
         if (categoryNodes.length === 0) return
@@ -456,31 +456,88 @@ export function KnowledgeGraphCanvas() {
         const maxY = Math.max(...ys) + 150
         const centerCatX = (minX + maxX) / 2
         const centerCatY = (minY + maxY) / 2
+        const width = maxX - minX
+        const height = maxY - minY
 
-        // Multi-layer nebula effect
-        const gradient1 = ctx.createRadialGradient(centerCatX - 100, centerCatY - 100, 0, centerCatX, centerCatY, 500)
-        gradient1.addColorStop(0, config.bgGradient[0].replace('0.05', '0.08'))
-        gradient1.addColorStop(0.5, config.bgGradient[0].replace('0.05', '0.03'))
-        gradient1.addColorStop(1, config.bgGradient[1])
-        
-        const gradient2 = ctx.createRadialGradient(centerCatX + 150, centerCatY + 150, 0, centerCatX, centerCatY, 600)
-        gradient2.addColorStop(0, config.bgGradient[0].replace('0.05', '0.06'))
-        gradient2.addColorStop(0.6, config.bgGradient[0].replace('0.05', '0.02'))
-        gradient2.addColorStop(1, config.bgGradient[1])
-        
-        // Apply nebula layers with blend modes
+        // Determine spiral direction per category
+        const spiralDirection = category === 'Math' ? 1 : category === 'AI' ? -1 : 0.5
+        const rotationOffset = timeRef.current * 0.05 * spiralDirection
+
+        // Layer 1: Large organic cloud blobs
         ctx.globalCompositeOperation = 'screen'
-        ctx.fillStyle = gradient1
-        ctx.fillRect(minX, minY, maxX - minX, maxY - minY)
-        ctx.fillStyle = gradient2
-        ctx.fillRect(minX, minY, maxX - minX, maxY - minY)
-        ctx.globalCompositeOperation = 'source-over'
-        
-        // Add some "dust" particles
-        for (let i = 0; i < 30; i++) {
-          const dustX = minX + Math.random() * (maxX - minX)
-          const dustY = minY + Math.random() * (maxY - minY)
-          const dustSize = Math.random() * 40 + 20
+        const numBlobs = 15
+        for (let i = 0; i < numBlobs; i++) {
+          const blobAngle = (i / numBlobs) * Math.PI * 2 + rotationOffset * 0.3
+          const blobDist = (Math.random() * 0.4 + 0.2) * Math.min(width, height) / 2
+          const blobX = centerCatX + Math.cos(blobAngle) * blobDist
+          const blobY = centerCatY + Math.sin(blobAngle) * blobDist
+          const blobSize = Math.random() * 120 + 80
+          const blobOpacity = Math.random() * 0.06 + 0.02
+
+          const blobGrad = ctx.createRadialGradient(blobX, blobY, 0, blobX, blobY, blobSize)
+          blobGrad.addColorStop(0, config.color + Math.floor(blobOpacity * 255).toString(16).padStart(2, '0'))
+          blobGrad.addColorStop(0.4, config.color + Math.floor(blobOpacity * 0.5 * 255).toString(16).padStart(2, '0'))
+          blobGrad.addColorStop(1, 'rgba(0,0,0,0)')
+
+          ctx.fillStyle = blobGrad
+          ctx.beginPath()
+          ctx.arc(blobX, blobY, blobSize, 0, Math.PI * 2)
+          ctx.fill()
+        }
+
+        // Layer 2: Spiral arms (logarithmic spiral)
+        const numArms = category === 'Music' ? 4 : 3 // Double helix for music
+        const armRotationOffset = Math.PI * 2 / numArms
+
+        for (let arm = 0; arm < numArms; arm++) {
+          const armOffset = arm * armRotationOffset
+          
+          // Draw spiral path with gradient blobs
+          for (let t = 0; t < Math.PI * 3; t += 0.15) {
+            const spiralRadius = 50 + t * 40
+            const angle = t * spiralDirection + armOffset + rotationOffset
+            
+            const spiralX = centerCatX + spiralRadius * Math.cos(angle)
+            const spiralY = centerCatY + spiralRadius * Math.sin(angle)
+            
+            // Check if point is within category bounds
+            if (spiralX < minX || spiralX > maxX || spiralY < minY || spiralY > maxY) continue
+            
+            // Fade out towards the edge
+            const distFromCenter = Math.hypot(spiralX - centerCatX, spiralY - centerCatY)
+            const maxDist = Math.min(width, height) / 2
+            const fadeFactor = Math.max(0, 1 - distFromCenter / maxDist)
+            
+            const spiralSize = 40 + Math.sin(t * 2) * 10
+            const spiralOpacity = (0.04 + Math.sin(t * 3) * 0.02) * fadeFactor
+
+            const spiralGrad = ctx.createRadialGradient(spiralX, spiralY, 0, spiralX, spiralY, spiralSize)
+            spiralGrad.addColorStop(0, config.color + Math.floor(spiralOpacity * 255).toString(16).padStart(2, '0'))
+            spiralGrad.addColorStop(0.5, config.color + Math.floor(spiralOpacity * 0.4 * 255).toString(16).padStart(2, '0'))
+            spiralGrad.addColorStop(1, 'rgba(0,0,0,0)')
+
+            ctx.fillStyle = spiralGrad
+            ctx.beginPath()
+            ctx.arc(spiralX, spiralY, spiralSize, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        }
+
+        // Layer 3: Dust particles along spiral
+        const numDust = 40
+        for (let i = 0; i < numDust; i++) {
+          const dustT = (i / numDust) * Math.PI * 2.5
+          const dustArm = Math.floor(Math.random() * numArms)
+          const dustArmOffset = dustArm * armRotationOffset
+          const dustRadius = 60 + dustT * 35 + (Math.random() - 0.5) * 40
+          const dustAngle = dustT * spiralDirection + dustArmOffset + rotationOffset + (Math.random() - 0.5) * 0.3
+          
+          const dustX = centerCatX + dustRadius * Math.cos(dustAngle)
+          const dustY = centerCatY + dustRadius * Math.sin(dustAngle)
+          
+          if (dustX < minX || dustX > maxX || dustY < minY || dustY > maxY) continue
+          
+          const dustSize = Math.random() * 25 + 15
           const dustOpacity = Math.random() * 0.03 + 0.01
           
           const dustGrad = ctx.createRadialGradient(dustX, dustY, 0, dustX, dustY, dustSize)
@@ -493,11 +550,13 @@ export function KnowledgeGraphCanvas() {
           ctx.fill()
         }
 
+        ctx.globalCompositeOperation = 'source-over'
+
         // Category label - fixed size, always visible at top
         const labelSize = 48
         ctx.font = `900 ${labelSize}px Inter`
         ctx.fillStyle = config.color
-        ctx.globalAlpha = zoom < 0.8 ? 0.4 : 0.2 // Subtle at all zoom levels
+        ctx.globalAlpha = zoom < 0.8 ? 0.4 : 0.2
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
         ctx.fillText(category.toUpperCase(), centerCatX, minY - 80)
