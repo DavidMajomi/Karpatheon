@@ -88,7 +88,9 @@ class NoteService:
             existing = self.client.storage.from_(self.BUCKET_NAME).list(file_id)
             if existing:
                 raise ValueError(f"Note with file_id {file_id} already exists")
-        except:
+        except ValueError:
+            raise  # Re-raise ValueError (file exists)
+        except Exception:
             pass  # File doesn't exist, proceed with creation
         
         # Store the markdown content

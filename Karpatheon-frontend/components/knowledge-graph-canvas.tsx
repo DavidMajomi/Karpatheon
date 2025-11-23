@@ -739,26 +739,54 @@ export function KnowledgeGraphCanvas() {
       setSaveError(null)
       setSaveSuccess(false)
 
-      await notesAPI.create({
-        file_id: activeNodeData.id,
-        title: activeNodeData.title,
-        content: activeNodeData.description,
-        url: activeNodeData.url
-      })
+      try {
+        // Try to create the note first
+        const response = await notesAPI.create({
+          file_id: activeNodeData.id,
+          title: activeNodeData.title,
+          content: activeNodeData.description,
+          url: activeNodeData.url
+        })
 
-      setSaveSuccess(true)
+        console.log('✅ Note created:', response)
+        setSaveSuccess(true)
+
+      } catch (createErr) {
+        // If note already exists (409), update it instead
+        if (createErr instanceof Error && createErr.message.includes('already exists')) {
+          console.log('📝 Note exists, updating...')
+
+          // Get existing note to append to
+          const existing = await notesAPI.get(activeNodeData.id)
+
+          // Append new content with timestamp
+          const timestamp = new Date().toISOString().split('T')[0]
+          const updatedContent = `${existing.content}\n\n---\n## Updated from Source (${timestamp})\n${activeNodeData.description}`
+
+          await notesAPI.update(activeNodeData.id, {
+            content: updatedContent
+          })
+
+          console.log('✅ Note updated with new content')
+          setSaveSuccess(true)
+
+        } else {
+          // Other error, re-throw
+          throw createErr
+        }
+      }
+
+      // Close panel after success
       setTimeout(() => {
         setSaveSuccess(false)
-        setSelectedNode(null) // Close the panel after success
+        setSelectedNode(null)
       }, 1500)
 
     } catch (err) {
+      console.error('❌ Save failed:', err)
+
       if (err instanceof Error) {
-        if (err.message.includes('already exists')) {
-          setSaveError('Note already saved!')
-        } else {
-          setSaveError(err.message)
-        }
+        setSaveError(err.message || 'Save failed')
       } else {
         setSaveError('Failed to save note')
       }
