@@ -1,26 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Search, Sparkles, Clock, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchResults } from '@/components/search-results'
+import { apiClient } from '@/lib/api-client'
+import type { SearchResponse } from '@/lib/types'
+import { toast } from 'sonner'
 
 export function SearchInterface() {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const [showResults, setShowResults] = useState(false)
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null)
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
       setIsSearching(true)
-      setShowResults(false)
-      
-      // Simulate search delay
-      setTimeout(() => {
+      setSearchResults(null)
+
+      try {
+        const results = await apiClient.search({ query })
+        setSearchResults(results)
+        toast.success('Search completed', {
+          description: `Found ${results.results.length} results`,
+        })
+      } catch (error: any) {
+        // Check if it's a network error
+        const isNetworkError = !error.status || error.message?.includes('Network') || error.message?.includes('fetch')
+
+        if (isNetworkError) {
+          toast.error('Cannot reach backend', {
+            description: 'Please ensure the backend server is running at ' + (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'),
+          })
+        } else {
+          toast.error('Search failed', {
+            description: error.message || 'An unexpected error occurred. Please try again.',
+          })
+        }
+      } finally {
         setIsSearching(false)
-        setShowResults(true)
-      }, 1500)
+      }
     }
   }
 
@@ -64,7 +84,7 @@ export function SearchInterface() {
         </form>
 
         {/* Growth Indicator */}
-        {!showResults && (
+        {!searchResults && (
           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-accent" />
             <span>Pantheon learns from every search to serve you better</span>
@@ -73,10 +93,10 @@ export function SearchInterface() {
       </div>
 
       {/* Search Results */}
-      {showResults && <SearchResults query={query} />}
+      {searchResults && <SearchResults results={searchResults} />}
 
       {/* Suggestions */}
-      {!showResults && (
+      {!searchResults && (
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
