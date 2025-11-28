@@ -18,6 +18,7 @@ class FileResponse(BaseModel):
     file_id: str
     status: str
     chunk_count: int
+    graph_nodes_created: int = 0 # Added to track graph creation status
 
 # --- Graph ---
 class ConceptNode(BaseModel):
@@ -28,3 +29,17 @@ class ConceptNode(BaseModel):
 class GraphContext(BaseModel):
     central_concept: str
     related_nodes: List[ConceptNode]
+    
+# --- Search (Web Search via Exa) ---
+class SearchRequest(BaseModel):
+    query: str
+    
+class SearchResult(BaseModel):
+    title: str
+    url: str
+    snippet: str
+
+class SearchResponse(BaseModel):
+    original_query: str
+    refined_query: str
+    results: List[SearchResult]

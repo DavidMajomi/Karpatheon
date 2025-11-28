@@ -18,7 +18,7 @@ export function AssistantChat() {
     {
       id: '1',
       role: 'assistant',
-      content: "Good evening. I'm your Pantheon knowledge assistant. I have deep context on your 127 explored topics and understand your learning patterns. What would you like to explore today?",
+      content: "Good evening. I'm your Karpatheon knowledge assistant. I have deep context on your 127 explored topics and understand your learning patterns. What would you like to explore today?",
       timestamp: new Date(),
     },
   ])
@@ -66,13 +66,12 @@ export function AssistantChat() {
                   </AvatarFallback>
                 </Avatar>
               )}
-              
+
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                  message.role === 'user'
+                className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
                     ? 'bg-primary/10 text-foreground border border-primary/20'
                     : 'bg-muted/50 text-foreground border border-border/50'
-                }`}
+                  }`}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
                 <span className="mt-2 block text-xs text-muted-foreground">

@@ -22,12 +22,12 @@ export function WaitlistHero() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '4s' }} />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-      
+
       <div className="relative z-10 max-w-5xl mx-auto text-center">
         {/* Logo/Brand */}
         <div className="flex items-center justify-center gap-2 mb-8 animate-fade-in">
           <Sparkles className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-light tracking-wider text-primary">PANTHEON</h2>
+          <h2 className="text-2xl font-light tracking-wider text-primary">Karpatheon</h2>
         </div>
 
         {/* Main Headline */}
@@ -39,8 +39,8 @@ export function WaitlistHero() {
 
         {/* Subheadline */}
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up font-light" style={{ animationDelay: '0.1s', fontFamily: 'Inter, sans-serif' }}>
-          The intelligent search platform built for top performers. 
-          Pantheon evolves with your curiosity, remembering what matters and surfacing insights you didn't know you needed.
+          The intelligent search platform built for top performers.
+          Karpatheon evolves with your curiosity, remembering what matters and surfacing insights you didn't know you needed.
         </p>
 
         {/* Waitlist Form */}
@@ -56,8 +56,8 @@ export function WaitlistHero() {
                 className="h-14 px-6 bg-card/50 backdrop-blur border-border/50 text-foreground placeholder:text-muted-foreground focus:border-primary transition-all"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 size="lg"
                 className="h-14 px-8 bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-105 font-medium"
                 style={{ fontFamily: 'Inter, sans-serif' }}

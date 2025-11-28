@@ -27,7 +27,7 @@ class IngestionService:
         self.neo4j_driver = get_neo4j()
         # Initialize Gemini Embeddings (Requires GOOGLE_API_KEY in .env)
         self.embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
-        self.llm = ChatGoogleGenerativeAI(temperature=0, model="gemini-1.5-flash")
+        self.llm = ChatGoogleGenerativeAI(temperature=0, model="gemini-2.5-flash")
 
     async def process_file(self, user_id: str, file: UploadFile) -> Dict[str, Any]:
         """

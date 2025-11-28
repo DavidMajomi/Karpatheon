@@ -19,7 +19,7 @@ export function WaitlistCTA() {
     <section className="py-32 px-4 relative overflow-hidden">
       {/* Background accent */}
       <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent pointer-events-none" />
-      
+
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <h2 className="text-5xl md:text-7xl font-light mb-6 text-balance leading-tight">
           Ready to think <span className="text-primary italic">faster?</span>
@@ -40,8 +40,8 @@ export function WaitlistCTA() {
                 className="h-14 px-6 bg-card/50 backdrop-blur border-border/50 text-foreground placeholder:text-muted-foreground focus:border-primary transition-all"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 size="lg"
                 className="h-14 px-8 bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-105 font-medium"
                 style={{ fontFamily: 'Inter, sans-serif' }}
@@ -55,7 +55,7 @@ export function WaitlistCTA() {
           <div className="max-w-md mx-auto animate-fade-in">
             <div className="p-6 bg-primary/10 border border-primary/20 rounded-lg">
               <p className="text-lg text-foreground font-light" style={{ fontFamily: 'Inter, sans-serif' }}>
-                ✓ Welcome to Pantheon. Check your inbox.
+                ✓ Welcome to Karpatheon. Check your inbox.
               </p>
             </div>
           </div>

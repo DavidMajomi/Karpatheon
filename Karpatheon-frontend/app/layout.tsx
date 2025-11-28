@@ -3,19 +3,19 @@ import { Cormorant_Garamond, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const cormorantGaramond = Cormorant_Garamond({ 
+const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-sans'
 });
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: '--font-body'
 });
 
 export const metadata: Metadata = {
-  title: 'Pantheon — Search That Grows With You',
+  title: 'Karpatheon — Search That Grows With You',
   description: 'The intelligent search platform for top performers. Learns your interests, evolves with your curiosity.',
   generator: 'v0.app',
   icons: {
@@ -45,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       {/* Added suppressHydrationWarning to ignore extension-injected attributes */}
-      <body 
+      <body
         className={`${cormorantGaramond.variable} ${inter.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
